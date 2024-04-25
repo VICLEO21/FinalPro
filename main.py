@@ -5,15 +5,25 @@ import threading
 import time
 import logging
 from concurrent.futures import ThreadPoolExecutor
+import os
 
 logging.basicConfig(level=logging.DEBUG, format="%(threadName)s: %(message)s")
 
 #-----------------------------------------------------------------------------
-
+#Nombre archivo dinamico
 nombre_archivo = input("Nombre del archivo: ")
 
+#Lectura de archivo guardando en array
 df = pd.read_excel(nombre_archivo,sheet_name='Sheet',engine='openpyxl')
 array = df.values
+
+#Número de hilos a usar dinamico 
+num_Hilos = 0 
+while num_Hilos <2 or num_Hilos>9:
+    os.system ("cls")
+    num_Hilos = int(input ("Número de hilos a usar: "))
+
+
 
 
 globalArrayNum = []
@@ -28,18 +38,26 @@ subrango = 200//4
 rangoActual = 1
 executors = 4
 
-with ThreadPoolExecutor(max_workers=2) as executor:
+with ThreadPoolExecutor(max_workers =  num_Hilos ) as executor:
     for i in range (1,executors +1,1):
         j = subrango * i
         executor.submit(contadorDos, rangoActual , j)
         rangoActual = subrango + rangoActual
 
 
-sumatoria = 0
-for fila in array:
-    for elemento in fila:
-        sumatoria += elemento
-            
-            
-print (sumatoria)            
+
+
+
+def suma (arr):
+    sumaTotal = 0 
+    for fila in arr:
+        sumaFila = sum(fila)
+        sumaTotal += sumaFila
+    return sumaTotal
+
+
+
+print (suma (array))
     
+
+            
