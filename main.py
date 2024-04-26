@@ -1,63 +1,65 @@
 import pandas as pd
-import openpyxl
-from lib import *
 import threading
 import time
 import logging
 from concurrent.futures import ThreadPoolExecutor
-import os
+import os 
 
 logging.basicConfig(level=logging.DEBUG, format="%(threadName)s: %(message)s")
 
-#-----------------------------------------------------------------------------
-#Nombre archivo dinamico
+
+
 nombre_archivo = input("Nombre del archivo: ")
 
-#Lectura de archivo guardando en array
 df = pd.read_excel(nombre_archivo,sheet_name='Sheet',engine='openpyxl')
 array = df.values
 
-#Número de hilos a usar dinamico 
-num_Hilos = 0 
-while num_Hilos <2 or num_Hilos>9:
+numHilos = 0 
+while numHilos <2 or numHilos>10:
     os.system ("cls")
-    num_Hilos = int(input ("Número de hilos a usar: "))
+    numHilos = int(input ("Número de hilos a usar entre 2 a 10: "))
+    print("")
 
 
+def sumaHilo(datos, inicio, fin):
+    sumaParcial = suma(datos[inicio:fin])
+    print(f"Suma de hilo: {sumaParcial}")
 
 
-globalArrayNum = []
-def contadorDos(inicio,fin):
-    logging.info(f'Funcion con rango: {inicio} - {fin}')
-    for i in range (inicio,fin+1,1):
-        globalArrayNum.append(i)
-        time.sleep(0.01)
-    return 0
-
-subrango = 200//4
-rangoActual = 1
-executors = 4
-
-with ThreadPoolExecutor(max_workers =  num_Hilos ) as executor:
-    for i in range (1,executors +1,1):
-        j = subrango * i
-        executor.submit(contadorDos, rangoActual , j)
-        rangoActual = subrango + rangoActual
-
-
-
-
-
-def suma (arr):
+def suma (array):
     sumaTotal = 0 
-    for fila in arr:
-        sumaFila = sum(fila)
+    for fila in array:
+        sumaFila = 0 
+        for elemento in fila:
+            sumaFila += elemento
         sumaTotal += sumaFila
     return sumaTotal
 
 
+datos = len(array)
+hilo = datos // numHilos
 
-print (suma (array))
+t0 = time.time()
+hilos = []
+inicio = 0
+
+for i in range(numHilos):
+    fin = inicio + datos//numHilos 
+    hilo = threading.Thread(target=sumaHilo, args=(array, inicio, fin))
+    hilos.append(hilo)
+    inicio = fin
+    hilo.start()
+
+for hilo in hilos:
+    hilo.join()
+tf=time.time()-t0
+
+
+
+print ("")
+print(f'Tiempo de ejecucion: {tf}')
+print ("")
+print(f"Suma Total: {suma(array)}")
     
-
+    
             
